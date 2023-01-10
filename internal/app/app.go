@@ -2,6 +2,7 @@ package app
 
 import (
 	"go-clean-arch-temp/cmd/config"
+	"go-clean-arch-temp/pkg/httpserver"
 	"go-clean-arch-temp/pkg/mariadb"
 	"go-clean-arch-temp/pkg/rabbitmq"
 	"log"
@@ -40,7 +41,7 @@ func Run() error {
 		}
 		log.Println("[mariadb]: down")
 	}()
-	log.Panicln("[mariadb]: up")
+	log.Println("[mariadb]: up")
 
 	rmq, err := rabbitmq.NewConnection(cfg.RabbitMQ.URL)
 	if err != nil {
@@ -54,6 +55,19 @@ func Run() error {
 		log.Println("[rabitmq]: down")
 	}()
 
+	server := httpserver.NewHttpServer()
+	err = server.Run()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := server.Shutdown(); err != nil {
+			log.Fatal(err)
+		}
+		log.Println("[server]: down")
+	}()
+	log.Println("[server]: up")
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
@@ -61,6 +75,8 @@ func Run() error {
 	case <-quit:
 		break
 	case <-rmq.Notify():
+		break
+	case <-server.Notify():
 		break
 	}
 
