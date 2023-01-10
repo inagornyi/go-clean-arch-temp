@@ -1,0 +1,29 @@
+app:
+  name: 'app'
+  version: '1.0.0'
+
+mariadb:
+  url: 127.0.0.1:3306
+  user: root
+  password: root
+  name: test
+
+rabbitmq:
+  url: amqp://localhost:5672
+  consumer:
+    exchange:
+      name: exchange
+      type: direct
+      durable: true
+      auto_delete: false
+      internal: false
+      no_wait: false
+    queue:
+      name: queue
+      durable: true
+      auto_delete: false
+      exclusive: false
+      no_wait: false
+    binding_options:
+      routing_key: routing-key
+      no_wait: false
