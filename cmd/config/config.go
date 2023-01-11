@@ -6,8 +6,7 @@ import (
 
 type (
 	Config struct {
-		configs.App      `yaml:"app"`
-		configs.MariaDB  `yaml:"mariadb"`
-		configs.RabbitMQ `yaml:"rabbitmq"`
+		configs.App     `yaml:"app"`
+		configs.MariaDB `yaml:"mariadb"`
 	}
 )

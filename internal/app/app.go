@@ -82,9 +82,8 @@ func Run() error {
 		}
 		log.Println("[server]: down")
 	}()
-	log.Println("[server]: up")
-
 	v1.NewRouter(server.Router(), usecase)
+	log.Println("[server]: up")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
