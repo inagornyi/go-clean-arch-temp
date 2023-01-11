@@ -11,10 +11,9 @@ services:
       MYSQL_PASSWORD: root
       MYSQL_ROOT_PASSWORD: root
 
-  deposit:
+  app:
     build: .
     depends_on:
       - mariadb
-      - rabbitmq      
     volumes:
       - ./cmd/config.yml:/app/config.yml
