@@ -8,7 +8,6 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
 	github.com/inagornyi/go-config v0.1.1
-	github.com/rabbitmq/amqp091-go v1.5.0
 )
 
 require (
