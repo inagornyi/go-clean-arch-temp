@@ -15,13 +15,6 @@ func NewHandler(usecase domain.UserUseCase) Handler {
 	return Handler{usecase}
 }
 
-func (h *Handler) HandlerFuncs() []gin.HandlerFunc {
-	return []gin.HandlerFunc{
-		h.FetchByUsername(),
-		h.Create(),
-	}
-}
-
 func (h *Handler) FetchByUsername() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{})
