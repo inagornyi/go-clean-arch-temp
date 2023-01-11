@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"go-clean-arch-temp/cmd/config"
 	"go-clean-arch-temp/pkg/httpserver"
 	"go-clean-arch-temp/pkg/mariadb"
@@ -10,6 +11,11 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	cfg "github.com/inagornyi/go-config"
 )
@@ -42,6 +48,23 @@ func Run() error {
 		log.Println("[mariadb]: down")
 	}()
 	log.Println("[mariadb]: up")
+
+	driver, err := mysql.WithInstance(db.DB(), &mysql.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://../../migrations",
+		"mysql",
+		driver,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = m.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		log.Fatal(err)
+	}
 
 	rmq, err := rabbitmq.NewConnection(cfg.RabbitMQ.URL)
 	if err != nil {
