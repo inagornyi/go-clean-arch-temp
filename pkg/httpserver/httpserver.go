@@ -10,18 +10,27 @@ import (
 
 type HttpServer struct {
 	server *http.Server
+	router *gin.Engine
 	notify chan error
 }
 
 func NewHttpServer() *HttpServer {
 	router := gin.Default()
+	router.GET("/ping", func(ctx *gin.Context) {
+		ctx.String(http.StatusOK, "pong")
+	})
 	return &HttpServer{
 		server: &http.Server{
 			Addr:    ":8080",
 			Handler: router,
 		},
+		router: router,
 		notify: make(chan error, 1),
 	}
+}
+
+func (s *HttpServer) Router() *gin.Engine {
+	return s.router
 }
 
 func (s *HttpServer) Run() error {

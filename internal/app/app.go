@@ -3,9 +3,11 @@ package app
 import (
 	"errors"
 	"go-clean-arch-temp/cmd/config"
+	v1 "go-clean-arch-temp/internal/delivery/http/v1"
+	"go-clean-arch-temp/internal/repository"
+	"go-clean-arch-temp/internal/usecase"
 	"go-clean-arch-temp/pkg/httpserver"
 	"go-clean-arch-temp/pkg/mariadb"
-	"go-clean-arch-temp/pkg/rabbitmq"
 	"log"
 	"os"
 	"os/signal"
@@ -54,7 +56,7 @@ func Run() error {
 		log.Fatal(err)
 	}
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://../../migrations",
+		"file://../migrations",
 		"mysql",
 		driver,
 	)
@@ -66,17 +68,8 @@ func Run() error {
 		log.Fatal(err)
 	}
 
-	rmq, err := rabbitmq.NewConnection(cfg.RabbitMQ.URL)
-	if err != nil {
-		return err
-	}
-	log.Println("[rabitmq]: up")
-	defer func() {
-		if err := rmq.Shutdown(); err != nil {
-			log.Fatal(err)
-		}
-		log.Println("[rabitmq]: down")
-	}()
+	repository := repository.NewUserRepository()
+	usecase := usecase.NewUserUseCase(repository)
 
 	server := httpserver.NewHttpServer()
 	err = server.Run()
@@ -91,13 +84,13 @@ func Run() error {
 	}()
 	log.Println("[server]: up")
 
+	v1.NewRouter(server.Router(), usecase)
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
 	select {
 	case <-quit:
-		break
-	case <-rmq.Notify():
 		break
 	case <-server.Notify():
 		break
